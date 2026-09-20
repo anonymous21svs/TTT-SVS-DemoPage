@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TTT-SVS: Test-Time Training for Fine-Grained Technique Control in Singing Voice Synthesis."
+    />
+    <meta name="theme-color" content="#f6f4ef" />
+    <title>TTT-SVS — Fine-Grained Technique Control</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='7' fill='%23e87763'/%3E%3Cpath d='M10 32h7l4-13 7 27 7-28 6 20 4-6h9' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        --paper: #f6f4ef;
+        --paper-deep: #ece9e2;
+        --ink: #172132;
+        --navy: #203a58;
+        --coral: #e87763;
+        --white: #fffdf9;
+        --muted: #6c7279;
+        --line: rgba(23, 33, 50, 0.13);
+        --max: 1180px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .nav-wrap {
+        background: rgba(246, 244, 239, 0.96);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+      }
+
+      .nav {
+        width: min(calc(100% - 56px), var(--max));
+        min-height: 106px;
+        margin: 0 auto;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-mark {
+        min-width: 50px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        padding: 0 9px;
+        background: var(--coral);
+        color: white;
+        font-family: "Courier New", monospace;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: clamp(26px, 4vw, 58px);
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .nav-links a:hover,
+      .nav-links a:focus-visible {
+        color: var(--coral);
+      }
+
+      .hero {
+        width: min(calc(100% - 56px), var(--max));
+        min-height: 490px;
+        margin: 0 auto;
+        padding: 112px 0 92px;
+        display: flex;
+        align-items: center;
+      }
+
+      .hero-inner {
+        max-width: 1120px;
+      }
+
+      h1 {
+        max-width: 1100px;
+        margin: 0;
+        font-size: clamp(3rem, 6vw, 5.05rem);
+        line-height: 1.03;
+        letter-spacing: -0.055em;
+        font-weight: 800;
+      }
+
+      .hero-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 54px;
+        margin-top: 44px;
+        padding: 0 24px;
+        border-radius: 3px;
+        background: var(--navy);
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 160ms ease, background 160ms ease;
+      }
+
+      .hero-action:hover,
+      .hero-action:focus-visible {
+        background: #294a6f;
+        transform: translateY(-2px);
+      }
+
+      .abstract {
+        background: var(--navy);
+        color: var(--white);
+      }
+
+      .abstract-inner {
+        width: min(calc(100% - 56px), var(--max));
+        margin: 0 auto;
+        padding: 74px 0 84px;
+        display: grid;
+        grid-template-columns: 180px minmax(0, 1fr);
+        gap: 54px;
+      }
+
+      .eyebrow {
+        margin: 4px 0 0;
+        color: #a9c0d5;
+        font-family: "Courier New", monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+      }
+
+      .abstract p {
+        max-width: 900px;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.22rem, 2.15vw, 1.65rem);
+        line-height: 1.48;
+        letter-spacing: -0.012em;
+      }
+
+      .abstract strong {
+        color: #ffffff;
+        font-weight: 700;
+      }
+
+      .framework {
+        width: min(calc(100% - 56px), var(--max));
+        margin: 0 auto;
+        padding: 96px 0 104px;
+      }
+
+      .framework-figure {
+        margin: 42px 0 0;
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: var(--white);
+        box-shadow: 0 12px 34px rgba(23, 33, 50, 0.035);
+      }
+
+      .framework-figure img {
+        display: block;
+        width: max(100%, 980px);
+        height: auto;
+        padding: 24px;
+      }
+
+      .samples {
+        width: min(calc(100% - 56px), var(--max));
+        margin: 0 auto;
+        padding: 96px 0 112px;
+      }
+
+      .section-number {
+        color: var(--coral);
+        font-family: "Courier New", monospace;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+      }
+
+      h2 {
+        margin: 8px 0 12px;
+        font-size: clamp(2rem, 4vw, 3.35rem);
+        line-height: 1.08;
+        letter-spacing: -0.045em;
+      }
+
+      .samples > p {
+        max-width: 680px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+
+      .sample-list {
+        margin-top: 46px;
+        display: grid;
+        gap: 22px;
+      }
+
+      .sample-card {
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: var(--white);
+        padding: 32px;
+        box-shadow: 0 12px 34px rgba(23, 33, 50, 0.035);
+      }
+
+      .sample-meta {
+        display: grid;
+        grid-template-columns: minmax(130px, 0.3fr) minmax(0, 1.7fr);
+        border-top: 1px solid var(--ink);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .meta-item {
+        min-width: 0;
+        padding: 12px 0;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: baseline;
+        gap: 16px;
+      }
+
+      .meta-item + .meta-item {
+        padding-left: 24px;
+        border-left: 1px solid var(--line);
+      }
+
+      .meta-label {
+        font-family: "Courier New", monospace;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        color: var(--muted);
+      }
+
+      .meta-value {
+        min-width: 0;
+        font-weight: 700;
+      }
+
+      .lyric {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.08rem;
+        font-weight: 400;
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .audio-cell {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 15px 14px 14px;
+        background: #faf9f6;
+      }
+
+      .audio-cell.proposed {
+        border-color: rgba(232, 119, 99, 0.68);
+        background: #fff4f0;
+      }
+
+      .audio-heading {
+        min-height: 25px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-family: "Courier New", monospace;
+        font-size: 0.79rem;
+        font-weight: 800;
+      }
+
+      .proposed-badge {
+        border-radius: 2px;
+        background: var(--coral);
+        color: white;
+        padding: 3px 6px;
+        font-size: 0.63rem;
+        letter-spacing: 0.05em;
+      }
+
+      audio {
+        display: block;
+        width: 100%;
+        height: 40px;
+      }
+
+      .samples-note {
+        margin-top: 28px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+      }
+
+      .footer-inner {
+        width: min(calc(100% - 56px), var(--max));
+        margin: 0 auto;
+        padding: 34px 0 42px;
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .footer-inner strong {
+        color: var(--ink);
+      }
+
+      @media (max-width: 760px) {
+        .nav {
+          width: min(calc(100% - 32px), var(--max));
+          min-height: 82px;
+        }
+
+        .brand-text {
+          display: none;
+        }
+
+        .nav-links {
+          gap: 20px;
+        }
+
+        .nav-links a {
+          font-size: 0.82rem;
+        }
+
+        .hero,
+        .abstract-inner,
+        .framework,
+        .samples,
+        .footer-inner {
+          width: min(calc(100% - 32px), var(--max));
+        }
+
+        .hero {
+          min-height: 440px;
+          padding: 76px 0 72px;
+        }
+
+        h1 {
+          font-size: clamp(2.7rem, 13vw, 4.25rem);
+        }
+
+        .abstract-inner {
+          padding: 56px 0 64px;
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+
+        .samples {
+          padding: 72px 0 82px;
+        }
+
+        .framework {
+          padding: 72px 0 76px;
+        }
+
+        .framework-figure {
+          margin-top: 30px;
+        }
+
+        .framework-figure img {
+          padding: 16px;
+        }
+
+        .sample-card {
+          padding: 22px 18px;
+        }
+
+        .sample-meta,
+        .comparison-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .meta-item {
+          grid-template-columns: 86px minmax(0, 1fr);
+        }
+
+        .meta-item + .meta-item {
+          padding-left: 0;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+
+        .footer-inner {
+          flex-direction: column;
+          gap: 6px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        .hero-action {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body id="top">
+    <header class="nav-wrap">
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="TTT-SVS demo home">
+          <span class="brand-mark">TTT</span>
+          <span class="brand-text">SVS Demo</span>
+        </a>
+        <div class="nav-links">
+          <a href="#abstract">Abstract</a>
+          <a href="#framework">Overview</a>
+          <a href="#samples">Samples</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="paper-title">
+        <div class="hero-inner">
+          <h1 id="paper-title">Test-Time Training for Fine-Grained Technique Control in Singing Voice Synthesis</h1>
+          <a class="hero-action" href="#samples">View sample section</a>
+        </div>
+      </section>
+
+      <section class="abstract" id="abstract" aria-labelledby="abstract-label">
+        <div class="abstract-inner">
+          <h2 class="eyebrow" id="abstract-label">ABSTRACT</h2>
+          <p>
+            Fine-grained singing voice synthesis (SVS) requires duration, pitch, and voicing modules to account for distinct contexts associated with multiple singing techniques. We propose <strong>TTT-SVS</strong>, a test-time training framework that constructs and coordinates module-specific contexts within a pretrained TechSinger backbone. An inner loop forms context through self-supervised adaptation, while a supervised outer loop jointly coordinates the modules using the backbone's SVS losses. Specifically, TTT blocks project hidden features into queries, keys, and values and adapt fast networks to reconstruct values from keys. The updated weights encode context that queries retrieve to refine module features. At test time, only the fast weights are updated through the inner loop, enabling adaptation without reference recordings or acoustic annotations. Experiments show that TTT-SVS achieves the best synthesis quality and controllability among the evaluated models.
+          </p>
+        </div>
+      </section>
+
+      <section class="framework" id="framework" aria-labelledby="framework-title">
+        <span class="section-number">01</span>
+        <h2 id="framework-title">Framework Overview</h2>
+        <figure class="framework-figure">
+          <img src="assets/framework-overview.png" alt="Overview of the TTT-SVS framework integrated into duration, UV, and F0 prediction modules" />
+        </figure>
+      </section>
+
+      <section class="samples" id="samples" aria-labelledby="samples-title">
+        <span class="section-number">02</span>
+        <h2 id="samples-title">Singing Voice Samples</h2>
+        <p>Compare ground-truth recordings with the TechSinger backbone and TTT-SVS outputs.</p>
+        <div class="sample-list">
+          <article class="sample-card" aria-labelledby="sample-61-title">
+            <div class="sample-meta">
+              <div class="meta-item">
+                <span class="meta-label">LANGUAGE</span>
+                <span class="meta-value" id="sample-61-title">Chinese</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">LYRICS</span>
+                <span class="meta-value lyric" lang="zh">可是你要我怎样忘记你</span>
+              </div>
+            </div>
+            <div class="comparison-grid">
+              <div class="audio-cell">
+                <div class="audio-heading">GT</div>
+                <audio controls preload="metadata" aria-label="Sample 61 ground truth"><source src="audio/61GT.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell">
+                <div class="audio-heading">TechSinger</div>
+                <audio controls preload="metadata" aria-label="Sample 61 TechSinger"><source src="audio/61TECH.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell proposed">
+                <div class="audio-heading"><span>TTT-SVS</span><span class="proposed-badge">PROPOSED</span></div>
+                <audio controls preload="metadata" aria-label="Sample 61 TTT-SVS proposed"><source src="audio/61TTT.wav" type="audio/wav" /></audio>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-card" aria-labelledby="sample-3-title">
+            <div class="sample-meta">
+              <div class="meta-item">
+                <span class="meta-label">LANGUAGE</span>
+                <span class="meta-value" id="sample-3-title">Chinese</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">LYRICS</span>
+                <span class="meta-value lyric" lang="zh">光在照耀 你才想起他的好</span>
+              </div>
+            </div>
+            <div class="comparison-grid">
+              <div class="audio-cell">
+                <div class="audio-heading">GT</div>
+                <audio controls preload="metadata" aria-label="Sample 3 ground truth"><source src="audio/3GT.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell">
+                <div class="audio-heading">TechSinger</div>
+                <audio controls preload="metadata" aria-label="Sample 3 TechSinger"><source src="audio/3TECH.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell proposed">
+                <div class="audio-heading"><span>TTT-SVS</span><span class="proposed-badge">PROPOSED</span></div>
+                <audio controls preload="metadata" aria-label="Sample 3 TTT-SVS proposed"><source src="audio/3TTT.wav" type="audio/wav" /></audio>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-card" aria-labelledby="sample-2-title">
+            <div class="sample-meta">
+              <div class="meta-item">
+                <span class="meta-label">LANGUAGE</span>
+                <span class="meta-value" id="sample-2-title">English</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">LYRICS</span>
+                <span class="meta-value lyric" lang="en">(I) bet these memories follow you around</span>
+              </div>
+            </div>
+            <div class="comparison-grid">
+              <div class="audio-cell">
+                <div class="audio-heading">GT</div>
+                <audio controls preload="metadata" aria-label="Sample 2 ground truth"><source src="audio/2GT.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell">
+                <div class="audio-heading">TechSinger</div>
+                <audio controls preload="metadata" aria-label="Sample 2 TechSinger"><source src="audio/2TECH.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell proposed">
+                <div class="audio-heading"><span>TTT-SVS</span><span class="proposed-badge">PROPOSED</span></div>
+                <audio controls preload="metadata" aria-label="Sample 2 TTT-SVS proposed"><source src="audio/2TTT.wav" type="audio/wav" /></audio>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-card" aria-labelledby="sample-23-title">
+            <div class="sample-meta">
+              <div class="meta-item">
+                <span class="meta-label">LANGUAGE</span>
+                <span class="meta-value" id="sample-23-title">Chinese</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">LYRICS</span>
+                <span class="meta-value lyric" lang="zh">人间不过是你栖身之处银河里</span>
+              </div>
+            </div>
+            <div class="comparison-grid">
+              <div class="audio-cell">
+                <div class="audio-heading">GT</div>
+                <audio controls preload="metadata" aria-label="Sample 23 ground truth"><source src="audio/23GT.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell">
+                <div class="audio-heading">TechSinger</div>
+                <audio controls preload="metadata" aria-label="Sample 23 TechSinger"><source src="audio/23TECH.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell proposed">
+                <div class="audio-heading"><span>TTT-SVS</span><span class="proposed-badge">PROPOSED</span></div>
+                <audio controls preload="metadata" aria-label="Sample 23 TTT-SVS proposed"><source src="audio/23TTT.wav" type="audio/wav" /></audio>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-card" aria-labelledby="sample-23-2-title">
+            <div class="sample-meta">
+              <div class="meta-item">
+                <span class="meta-label">LANGUAGE</span>
+                <span class="meta-value" id="sample-23-2-title">Chinese</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">LYRICS</span>
+                <span class="meta-value lyric" lang="zh">才是你灵魂的徜徉地</span>
+              </div>
+            </div>
+            <div class="comparison-grid">
+              <div class="audio-cell">
+                <div class="audio-heading">GT</div>
+                <audio controls preload="metadata" aria-label="Sample 23-2 ground truth"><source src="audio/23GT2.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell">
+                <div class="audio-heading">TechSinger</div>
+                <audio controls preload="metadata" aria-label="Sample 23-2 TechSinger"><source src="audio/23TECH2.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell proposed">
+                <div class="audio-heading"><span>TTT-SVS</span><span class="proposed-badge">PROPOSED</span></div>
+                <audio controls preload="metadata" aria-label="Sample 23-2 TTT-SVS proposed"><source src="audio/23TTT2.wav" type="audio/wav" /></audio>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-card" aria-labelledby="sample-12-title">
+            <div class="sample-meta">
+              <div class="meta-item">
+                <span class="meta-label">LANGUAGE</span>
+                <span class="meta-value" id="sample-12-title">English</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">LYRICS</span>
+                <span class="meta-value lyric" lang="en">when the sun goes down</span>
+              </div>
+            </div>
+            <div class="comparison-grid">
+              <div class="audio-cell">
+                <div class="audio-heading">GT</div>
+                <audio controls preload="metadata" aria-label="Sample 12 ground truth"><source src="audio/12GT.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell">
+                <div class="audio-heading">TechSinger</div>
+                <audio controls preload="metadata" aria-label="Sample 12 TechSinger"><source src="audio/12TECH.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell proposed">
+                <div class="audio-heading"><span>TTT-SVS</span><span class="proposed-badge">PROPOSED</span></div>
+                <audio controls preload="metadata" aria-label="Sample 12 TTT-SVS proposed"><source src="audio/12TTT.wav" type="audio/wav" /></audio>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-card" aria-labelledby="sample-30-title">
+            <div class="sample-meta">
+              <div class="meta-item">
+                <span class="meta-label">LANGUAGE</span>
+                <span class="meta-value" id="sample-30-title">German</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">LYRICS</span>
+                <span class="meta-value lyric" lang="de">bleibt es klar</span>
+              </div>
+            </div>
+            <div class="comparison-grid">
+              <div class="audio-cell">
+                <div class="audio-heading">GT</div>
+                <audio controls preload="metadata" aria-label="Sample 30 ground truth"><source src="audio/30GT.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell">
+                <div class="audio-heading">TechSinger</div>
+                <audio controls preload="metadata" aria-label="Sample 30 TechSinger"><source src="audio/30TECH2.wav" type="audio/wav" /></audio>
+              </div>
+              <div class="audio-cell proposed">
+                <div class="audio-heading"><span>TTT-SVS</span><span class="proposed-badge">PROPOSED</span></div>
+                <audio controls preload="metadata" aria-label="Sample 30 TTT-SVS proposed"><source src="audio/30TTT3.wav" type="audio/wav" /></audio>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <strong>TTT-SVS</strong>
+        <span>Test-Time Training for Fine-Grained Technique Control in Singing Voice Synthesis</span>
+      </div>
+    </footer>
+  </body>
+</html>
