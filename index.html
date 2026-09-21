@@ -64,32 +64,8 @@
         border-bottom: 1px solid var(--line);
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-end;
         gap: 32px;
-      }
-
-      .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 14px;
-        color: var(--ink);
-        text-decoration: none;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-
-      .brand-mark {
-        min-width: 50px;
-        height: 34px;
-        display: grid;
-        place-items: center;
-        padding: 0 9px;
-        background: var(--coral);
-        color: white;
-        font-family: "Courier New", monospace;
-        font-size: 0.82rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
       }
 
       .nav-links {
@@ -131,26 +107,6 @@
         font-weight: 800;
       }
 
-      .hero-action {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 54px;
-        margin-top: 44px;
-        padding: 0 24px;
-        border-radius: 3px;
-        background: var(--navy);
-        color: white;
-        text-decoration: none;
-        font-weight: 700;
-        transition: transform 160ms ease, background 160ms ease;
-      }
-
-      .hero-action:hover,
-      .hero-action:focus-visible {
-        background: #294a6f;
-        transform: translateY(-2px);
-      }
 
       .abstract {
         background: var(--navy);
@@ -372,10 +328,6 @@
           min-height: 82px;
         }
 
-        .brand-text {
-          display: none;
-        }
-
         .nav-links {
           gap: 20px;
         }
@@ -453,19 +405,12 @@
           scroll-behavior: auto;
         }
 
-        .hero-action {
-          transition: none;
-        }
       }
     </style>
   </head>
   <body id="top">
     <header class="nav-wrap">
       <nav class="nav" aria-label="Primary navigation">
-        <a class="brand" href="#top" aria-label="TTT-SVS demo home">
-          <span class="brand-mark">TTT</span>
-          <span class="brand-text">SVS Demo</span>
-        </a>
         <div class="nav-links">
           <a href="#abstract">Abstract</a>
           <a href="#framework">Overview</a>
@@ -478,7 +423,6 @@
       <section class="hero" aria-labelledby="paper-title">
         <div class="hero-inner">
           <h1 id="paper-title">Test-Time Training for Fine-Grained Technique Control in Singing Voice Synthesis</h1>
-          <a class="hero-action" href="#samples">View sample section</a>
         </div>
       </section>
 
